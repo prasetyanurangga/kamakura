@@ -7,7 +7,7 @@ import { Button } from "../ui/button";
 import { supabase } from "@/lib/supabase";
 function LinkCard({ data, onDelete }: { data: { id: number; created_at: string; link: string; category: string | null, title: string | null, image: string | null, desc: string | null }, onDelete: (id: number) => void }) {
   const formattedDate = new Date(data.created_at).toLocaleDateString("id-ID", {
-    year: "numeric",
+    year: "numeric", 
     month: "long",
     day: "numeric",
   });
