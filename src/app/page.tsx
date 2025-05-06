@@ -13,6 +13,7 @@ import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "sonner";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 function App() {
   const [links, setLinks] = React.useState([]);
@@ -26,6 +27,7 @@ function App() {
   const [offset, setOffset] = React.useState(0);
 
   const [url, setUrl] = React.useState("");
+  const [category, setCategory] = React.useState("");
 
   const toIndonesiaDateString = (date: Date) => {
     const options: Intl.DateTimeFormatOptions = {
@@ -69,6 +71,10 @@ function App() {
       sup = sup.ilike('link', `%${query}%`);
     }
 
+    if (category && category !== "semua") {
+      sup = sup.eq('category', category);
+    }
+
     const { data, error } = await sup;
 
     if (error) {
@@ -97,6 +103,12 @@ function App() {
       fetchData();
     }
   }, [selectedDate]);
+
+  useEffect(() => {
+    if (category) {
+      fetchData();
+    }
+  }, [category]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -149,6 +161,8 @@ function App() {
     fetchData();
   }
 
+
+
   return (
     <main className="py-8 px-8">
       <div className="mb-8 flex lg:flex-row flex-col items-center gap-x-4">
@@ -162,6 +176,20 @@ function App() {
             });
           }}
         />
+        <Select onValueChange={(value) => setCategory(value)}>
+          <SelectTrigger className="lg:w-[180px] w-full  mb-3 lg:mb-0">
+            <SelectValue placeholder="Pilih Kategori" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="semua">Semua</SelectItem>
+            <SelectItem value="tiktok">Tiktok</SelectItem>
+            <SelectItem value="youtube">Youtube</SelectItem>
+            <SelectItem value="instagram">Instagram</SelectItem>
+            <SelectItem value="linkedin">LinkedIn</SelectItem>
+            <SelectItem value="spotify">Spotify</SelectItem>
+            <SelectItem value="other">Other</SelectItem>
+          </SelectContent>
+        </Select>
         <Input
           className="lg:w-[200px]"
           placeholder="Cari...."
