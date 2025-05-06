@@ -1,7 +1,7 @@
 'use client';
 import React, { use, useEffect } from "react";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import { ExternalLink, Youtube, Video } from "lucide-react";
+import { ExternalLink, Youtube, Video, PlusIcon } from "lucide-react";
 import Link from "next/link";
 
 import { createClient } from '@supabase/supabase-js';
@@ -10,6 +10,9 @@ import LinkCard from "@/components/custom/link-card";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton"; // Import Skeleton
 import { supabase } from "@/lib/supabase";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { toast } from "sonner";
 
 function App() {
   const [links, setLinks] = React.useState([]);
@@ -21,6 +24,8 @@ function App() {
   const [isLoadingMore, setIsLoadingMore] = React.useState(false); // For pagination
   const [hasMore, setHasMore] = React.useState(true);
   const [offset, setOffset] = React.useState(0);
+
+  const [url, setUrl] = React.useState("");
 
   const toIndonesiaDateString = (date: Date) => {
     const options: Intl.DateTimeFormatOptions = {
@@ -109,6 +114,41 @@ function App() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, [offset, isLoadingMore, hasMore]);
 
+
+
+  const handleDelete = async (id: number) => {
+    await supabase.from("link").delete().eq("id", id);
+    fetchData();
+  };
+
+  const handleAdd = async () => {
+
+    if (!url) {
+      toast.error("URL tidak boleh kosong");
+      return;
+    }
+    if (!url.startsWith("https")) {
+      toast.error("URL tidak valid");
+      return;
+    }
+    
+    const response = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_EDGE_URL}?url=${url}`, {
+      method: 'GET',
+    });
+
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
+    }
+
+    await response.json();
+
+    setUrl("");
+
+    toast.success("Link berhasil ditambahkan");
+
+    fetchData();
+  }
+
   return (
     <main className="py-8 px-8">
       <div className="mb-8 flex lg:flex-row flex-col items-center gap-x-4">
@@ -133,6 +173,28 @@ function App() {
             }
           }}
         />
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button size="icon" className="fixed lg:static right-4 bottom-4"> 
+              <PlusIcon />
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>Tambah Link</DialogTitle>
+              <DialogDescription>
+                Tambahkan link baru ke koleksi Anda. Pastikan untuk memasukkan URL yang valid.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+                <Input type="url" id="link" placeholder="Masukan Link" className="w-full" />
+            </div>
+            <DialogFooter>
+              <Button onClick={handleAdd}>Simpan</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+        
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -153,7 +215,7 @@ function App() {
           </>
         ) : (
           links.map((item) => (
-            <LinkCard key={item.id+item.link} data={item} />
+            <LinkCard key={item.id+item.link} data={item} onDelete={(id) => handleDelete(id) } />
           ))
         )}
 

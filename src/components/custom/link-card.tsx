@@ -1,26 +1,17 @@
-import { ExternalLink, Video, Youtube } from "lucide-react";
+import { ExternalLink, Trash2Icon, Video, Youtube } from "lucide-react";
 import { Card, CardContent, CardFooter } from "../ui/card";
 import { use, useEffect, useState } from "react";
 
 import Link from "next/link";
-
-function LinkCard({ data }: { data: { id: number; created_at: string; link: string; category: string | null, title: string | null, image: string | null, desc: string | null } }) {
+import { Button } from "../ui/button";
+import { supabase } from "@/lib/supabase";
+function LinkCard({ data, onDelete }: { data: { id: number; created_at: string; link: string; category: string | null, title: string | null, image: string | null, desc: string | null }, onDelete: (id: number) => void }) {
   const formattedDate = new Date(data.created_at).toLocaleDateString("id-ID", {
     year: "numeric",
     month: "long",
     day: "numeric",
   });
 
-
-  const getLinkIcon = (url: string) => {
-    if (url.includes("youtube.com") || url.includes("youtu.be")) {
-      return <Youtube className="h-5 w-5 text-red-500" />;
-    } else if (url.includes("tiktok.com")) {
-      return <Video className="h-5 w-5 text-blue-400" />;
-    } else {
-      return <ExternalLink className="h-5 w-5 text-gray-500" />;
-    }
-  };
 
   const getDomainName = (url: string) => {
     try {
@@ -54,7 +45,13 @@ function LinkCard({ data }: { data: { id: number; created_at: string; link: stri
           </div>
         </div>
       </CardContent>
-      <CardFooter className="text-xs text-gray-500">Added on {formattedDate}</CardFooter>
+      <CardFooter className="text-xs text-gray-500 flex items-center justify-between">
+
+        <span>Added on {formattedDate}</span>
+        <Button variant="outline" size="icon" onClick={() => onDelete(data.id)}> 
+          <Trash2Icon />
+        </Button>
+      </CardFooter>
     </Card>
   );
 }
