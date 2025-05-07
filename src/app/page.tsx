@@ -28,6 +28,7 @@ function App() {
 
   const [url, setUrl] = React.useState("");
   const [category, setCategory] = React.useState("");
+  const [bunchOfCategory, setBunchOfCategory] = React.useState([]);
 
   const toIndonesiaDateString = (date: Date) => {
     const options: Intl.DateTimeFormatOptions = {
@@ -42,6 +43,23 @@ function App() {
 
     return `${year}-${month}-${day}`;
   };
+
+  const fetchCategoryLink = async () => {
+    const { data, error } = await supabase
+      .from('category_link')
+      .select('*');
+
+    if (error) {
+      console.error('Error fetching data:', error);
+    } else {
+      setBunchOfCategory(data.map((item) => {
+        return {
+          value: item.category.toLowerCase(),
+          text : item.category
+        }
+      }));
+    }
+  }
 
   const fetchData = async (query = "", offset = 0, append = false) => {
     const { from, to } = selectedDate;
@@ -96,6 +114,7 @@ function App() {
 
   useEffect(() => {
     fetchData();
+    fetchCategoryLink();
   }, []);
 
   useEffect(() => {
@@ -181,13 +200,11 @@ function App() {
             <SelectValue placeholder="Pilih Kategori" />
           </SelectTrigger>
           <SelectContent>
+
             <SelectItem value="semua">Semua</SelectItem>
-            <SelectItem value="tiktok">Tiktok</SelectItem>
-            <SelectItem value="youtube">Youtube</SelectItem>
-            <SelectItem value="instagram">Instagram</SelectItem>
-            <SelectItem value="linkedin">LinkedIn</SelectItem>
-            <SelectItem value="spotify">Spotify</SelectItem>
-            <SelectItem value="other">Other</SelectItem>
+            {
+              bunchOfCategory.map((item) =>  <SelectItem value={item.value}>{item.text}</SelectItem>)
+            }
           </SelectContent>
         </Select>
         <Input
